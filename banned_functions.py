@@ -40,8 +40,6 @@ def main(args):
         print("No functions detected. Have you run 'aa' yet?")
         return
 
-    print(funcs)
-
     bad_funcs = []
 
     print("\nCollecting banned functions...")
