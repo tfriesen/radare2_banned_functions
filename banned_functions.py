@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 #this script uses r2pipe for communicating with radare2. 'pip install r2pipe' should suffice
 
@@ -27,17 +27,23 @@ def main(args):
 
     if (len(args) > 1):
         r = r2pipe.open(args[1])
+        machine = r.cmdj('ij')['bin']['os']
+            
+        if machine == "windows":
+            r.cmd("aaa")
+        else:
+            r.cmd("aa")
 
-    r.cmd("aaa")
+    debugging = ( ('pid' in r.cmdj("dij")) and (r.cmdj("dij")['pid']) > -1)
+    machine = r.cmdj("ij")['bin']['os']
 
-    debugging = r.cmdj("dij")['stopreason']
 
     #sadly, output is not consistent between iij and afi, so afl must be used
     #imports = r.cmdj("iij")
     funcs = r.cmdj("aflj")
 
     if len(funcs) < 1:
-        print("No functions detected. Have you run 'aa' yet?")
+        print("No functions detected.")
         return
 
     bad_funcs = []
@@ -45,10 +51,22 @@ def main(args):
     print("\nCollecting banned functions...")
 
     #First, collect all imports which are banned functions
-    for func in funcs:
-        for banned in bannedList:
-            if banned in func['name']:
-                bad_funcs.append(func)
+    #linux and windows have different 'gotchas' in the naming convention, so they are split up
+    if machine == 'linux' or machine == 'osx':
+        for func in funcs:
+            for banned in bannedList:
+                if banned in func['name'].split(".")[-1].split("_") and "_chk" not in func['name'].split(".")[-1]:
+                    bad_funcs.append(func)
+    elif machine == 'windows':
+        for func in funcs:
+            for banned in bannedList:
+                if banned in func['name'].split(".")[-1].split("_"):
+                    bad_funcs.append(func)
+    else:
+        print("OS %s not currently supported" % machine)
+        return
+
+
 
     if len(bad_funcs) == 0:
         print("\nNo banned functions found")
@@ -59,7 +77,7 @@ def main(args):
     for func in bad_funcs:
         print("* %s" % func['name'])
 
-    if debugging > -1:
+    if debugging:
         print("\nCurrently debugging, adding breakpoints...")
     else:
         print("\nNot currently debugging, no breakpoints will be added.")
@@ -67,11 +85,12 @@ def main(args):
     for func in bad_funcs:
         print("\n===%s:" % func['name'])
         for xref in func['codexrefs']:
-            print("Called at 0x%x" % xref['addr'])
-            if debugging > -1:
-                #TODO: Some error handling and reporting
-                r.cmd('db 0x%x' %xref['addr'])
-                print("Breakpoint added!")
+            if xref['type'] == "C":
+                print("Called at 0x%x" % xref['addr'])
+                if debugging:
+                    #TODO: Some error handling and reporting
+                    r.cmd('db 0x%x' %xref['addr'])
+                    print("Breakpoint added!")
 
 
 #hack for determining if we're in radare or not
@@ -79,3 +98,5 @@ if 'argv' in sys.__dict__:
     main(sys.argv)
 else:
     main([])
+
+
