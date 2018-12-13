@@ -1,6 +1,7 @@
 # radare2_banned_functions
 
-A python script for radare2 for discovering banned and dangerous functions. When run during debugging, will automatically set breakpoints every time a detected dangerous function is called. To call from within radare, ". /path/to/banned_functions.py"
+A python script for radare2 for discovering banned and dangerous functions. When run during debugging will automatically set breakpoints every time a detected dangerous function is called. To call from within radare, 
+`". /path/to/banned_functions.py"`
 
 When called from the command line, takes a single parameter, a path to a binary for analysis.
 
