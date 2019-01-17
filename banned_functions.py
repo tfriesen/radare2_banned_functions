@@ -28,11 +28,12 @@ def main(args):
     if (len(args) > 1):
         r = r2pipe.open(args[1])
         machine = r.cmdj('ij')['bin']['os']
-            
+        
+        #Sometimes you can get away with using less analysis on non-windows platforms, but only sometimes
         if machine == "windows":
             r.cmd("aaa")
         else:
-            r.cmd("aa")
+            r.cmd("aaa")
 
     debugging = ( ('pid' in r.cmdj("dij")) and (r.cmdj("dij")['pid']) > -1)
     machine = r.cmdj("ij")['bin']['os']
@@ -42,8 +43,8 @@ def main(args):
     #imports = r.cmdj("iij")
     funcs = r.cmdj("aflj")
 
-    if len(funcs) < 1:
-        print("No functions detected.")
+    if funcs is None or len(funcs) < 1:
+        print("No functions detected. Have you run 'aaa'?")
         return
 
     bad_funcs = []
@@ -84,14 +85,17 @@ def main(args):
 
     for func in bad_funcs:
         print("\n===%s:" % func['name'])
-        for xref in func['codexrefs']:
-            if xref['type'] == "C":
-                print("Called at 0x%x" % xref['addr'])
-                if debugging:
-                    #TODO: Some error handling and reporting
-                    r.cmd('db 0x%x' %xref['addr'])
-                    print("Breakpoint added!")
-
+        try:
+            for xref in func['codexrefs']:
+                if xref['type'] == "C":
+                    print("Called at 0x%x" % xref['addr'])
+                    if debugging:
+                        #TODO: Some error handling and reporting
+                        r.cmd('db 0x%x' %xref['addr'])
+                        print("Breakpoint added!")
+        except KeyError:
+             print("\nERROR: function %s found with not codexrefs. May need to run 'aaa'." % func['name'])
+             
 
 #hack for determining if we're in radare or not
 if 'argv' in sys.__dict__:
