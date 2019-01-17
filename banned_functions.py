@@ -94,7 +94,7 @@ def main(args):
                         r.cmd('db 0x%x' %xref['addr'])
                         print("Breakpoint added!")
         except KeyError:
-             print("\nERROR: function %s found with not codexrefs. May need to run 'aaa'." % func['name'])
+             print("\nERROR: function %s found with no codexrefs. May need to run 'aaa'." % func['name'])
              
 
 #hack for determining if we're in radare or not
