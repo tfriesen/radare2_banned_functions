@@ -18,7 +18,7 @@ Inspired by Stephen Sims' banned functions script for IDA: https://github.com/st
 
 ## Bugs and Limitations
 
-Note that there is a bug in the most recent version of r2pipe for python, 1.1.0, which prevents use from within radare. Fixed upstream, awaiting on a new release. You can fix yourself by changing line 46 in open_sync.py from 'else:' to 'elif filename:'
+Note that there is a bug in a recent version of r2pipe for python, 1.1.0, which prevents use from within radare. Fixed as of 1.2.0. You can also fix yourself by changing line 46 in open_sync.py from 'else:' to 'elif filename:'
 
 Can be called from Cutter, but output is to terminal, not console. Will not add breakpoints to Cutter. These are due to limitations with how Cutter has implemented console commands. Could potentially be fixed by converting the script to a plugin, but that is non-trivial.
 
